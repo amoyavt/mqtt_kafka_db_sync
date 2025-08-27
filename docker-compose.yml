@@ -47,13 +47,12 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       # Auto-create topics with 4 partitions for consumer parallelism
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
-      KAFKA_NUM_PARTITIONS: 4
+      KAFKA_NUM_PARTITIONS: 1
     volumes:
       - kafka_data:/opt/kafka/data
     restart: unless-stopped
     networks:
       - kafka-postgres-network
-
 
   kafka-connect:
     image: quay.io/debezium/connect:3.0

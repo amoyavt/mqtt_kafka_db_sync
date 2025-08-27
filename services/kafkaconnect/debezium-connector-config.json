@@ -17,7 +17,7 @@
     
     "topic.creation.enable": true,
     "topic.creation.default.replication.factor": 1,
-    "topic.creation.default.partitions": 4,
+    "topic.creation.default.partitions": 2,
     "topic.creation.default.cleanup.policy": "delete",
     "topic.creation.default.retention.ms": 604800000,
     

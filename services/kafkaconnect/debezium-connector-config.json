@@ -1,0 +1,44 @@
+{
+  "name": "postgres-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "pg16",
+    "database.port": "5432",
+    "database.user": "debezium",
+    "database.password": "debezium_secure_password",
+    "database.dbname": "appdb",
+    "topic.prefix": "postgres-server",
+    
+    "publication.name": "dbz_publication",
+    "publication.autocreate.mode": "disabled",
+    
+    "table.include.list": ".*",
+    "schema.include.list": "public",
+    
+    "topic.creation.enable": true,
+    "topic.creation.default.replication.factor": 1,
+    "topic.creation.default.partitions": 4,
+    "topic.creation.default.cleanup.policy": "delete",
+    "topic.creation.default.retention.ms": 604800000,
+    
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "false",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "false",
+    
+    "snapshot.mode": "initial",
+    "snapshot.locking.mode": "none",
+    "plugin.name": "pgoutput",
+    
+    "transforms": "route",
+    "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
+    "transforms.route.replacement": "$3",
+    
+    "slot.name": "debezium_slot",
+    "slot.drop.on.stop": false,
+    "heartbeat.interval.ms": 10000,
+    "max.batch.size": 2048,
+    "max.queue.size": 8192
+  }
+}

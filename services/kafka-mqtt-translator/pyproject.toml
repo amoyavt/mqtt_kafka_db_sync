@@ -1,0 +1,14 @@
+[project]
+name = "kafka-mqtt-translator"
+version = "0.1.0"
+description = "Translates Kafka messages to MQTT"
+dependencies = [
+    "kafka-python>=2.0.2",
+    "paho-mqtt>=1.6.1",
+    "types-paho-mqtt>=1.6.0",
+]
+requires-python = ">=3.9"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

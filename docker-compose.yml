@@ -106,6 +106,48 @@ services:
     networks:
       - kafka-postgres-network
 
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./services/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    restart: unless-stopped
+    networks:
+      - kafka-postgres-network
+
+  mqtt-explorer:
+    image: smeagolworms4/mqtt-explorer
+    container_name: mqtt-explorer
+    ports:
+      - "4000:4000"
+    environment:
+      - HTTP_PORT=4000
+    depends_on:
+      - mosquitto
+    restart: unless-stopped
+    networks:
+      - kafka-postgres-network
+
+  kafka-mqtt-translator:
+    build: ./services/kafka-mqtt-translator
+    container_name: kafka-mqtt-translator
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+      MQTT_HOST: mosquitto
+      MQTT_PORT: 1883
+      KAFKA_TOPICS: test
+      MQTT_TOPIC_PREFIX: db
+    depends_on:
+      - kafka
+      - mosquitto
+      - kafka-connect
+    restart: unless-stopped
+    networks:
+      - kafka-postgres-network
+
 volumes:
   pg_data:
   kafka_data:

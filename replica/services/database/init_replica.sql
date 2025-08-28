@@ -5,7 +5,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Set performance optimizations for IoT device
-SET shared_preload_libraries = 'pg_stat_statements';
+-- Note: shared_preload_libraries requires server restart, so it's configured via postgresql.conf
 SET log_statement = 'none';  -- Reduce logging for performance
 SET log_min_duration_statement = 1000;  -- Log only slow queries
 

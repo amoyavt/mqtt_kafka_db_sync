@@ -28,16 +28,17 @@ INSERT INTO test (description) VALUES ('Test from server');
 
 ## IoT Device Setup (Jetson)
 
-### 1. Copy replica directory to Jetson:
+### 1. Clone repository on Jetson:
 ```bash
-scp -r replica/ nvidia@192.168.1.236:~/mqtt_kafka_db_sync/
+ssh nvidia@192.168.1.236
+git clone https://github.com/amoyavt/mqtt_kafka_db_sync.git
+cd mqtt_kafka_db_sync
 ```
 
 ### 2. Start IoT services on Jetson:
 ```bash
-ssh nvidia@192.168.1.236
-cd ~/mqtt_kafka_db_sync/replica/
-docker-compose up -d
+cd replica/
+docker compose up -d
 ```
 
 ### 3. Monitor sync logs:

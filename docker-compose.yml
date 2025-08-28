@@ -3,7 +3,7 @@ services:
     image: postgres:16-alpine
     container_name: pg16
     ports:
-      - "5432:5432"
+      - "192.168.1.6:5432:5432"  # Bind to Wi-Fi interface for Jetson access
     environment:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: app_password_here
@@ -110,8 +110,8 @@ services:
     image: eclipse-mosquitto:2.0
     container_name: mosquitto
     ports:
-      - "1883:1883"
-      - "9001:9001"
+      - "192.168.1.6:1883:1883"  # Bind MQTT to Wi-Fi interface for Jetson
+      - "192.168.1.6:9001:9001"  # Bind WebSocket to Wi-Fi interface
     volumes:
       - ./services/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
     restart: unless-stopped

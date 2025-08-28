@@ -12,9 +12,17 @@ docker-compose up -d
 
 ### 2. Configure Debezium Connector:
 ```bash
-curl -X POST http://localhost:8083/connectors \
-  -H "Content-Type: application/json" \
-  -d @services/kafkaconnect/debezium-connector-config.json
+curl -X POST http://localhost:8083/connectors -H "Content-Type: application/json" -d @services/kafkaconnect/debezium-connector-config.json
+```
+
+Check connector status
+```bash
+  curl -X GET http://localhost:8083/connectors/postgres-connector/status
+```
+List all connectors
+```bash
+  # List all connectors
+  curl -X GET http://localhost:8083/connectors
 ```
 
 ### 3. Test Database Changes:

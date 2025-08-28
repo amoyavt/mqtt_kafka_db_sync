@@ -44,6 +44,7 @@ class IoTReplicaService:
         self.db_pool: Optional[asyncpg.Pool] = None
         self.message_buffer = asyncio.Queue(maxsize=500)
         self.running = True
+        self.loop: Optional[asyncio.AbstractEventLoop] = None
         
         # Setup signal handlers
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -165,14 +166,21 @@ class IoTReplicaService:
             payload = json.loads(message.payload.decode('utf-8'))
             
             # Add to internal buffer for async processing
-            asyncio.create_task(self.message_buffer.put({
+            message_data = {
                 'topic': message.topic,
                 'table_name': topic_parts[1],
                 'operation': topic_parts[2], 
                 'payload': payload,
                 'timestamp': time.time(),
                 'qos': message.qos
-            }))
+            }
+            
+            # Use call_soon_threadsafe to safely add to queue from MQTT thread
+            if self.loop and not self.loop.is_closed():
+                asyncio.run_coroutine_threadsafe(
+                    self.message_buffer.put(message_data), 
+                    self.loop
+                )
             
             logger.debug(f"Buffered message from topic {message.topic}")
             
@@ -392,6 +400,9 @@ class IoTReplicaService:
         logger.info("Starting IoT Replica Service...")
         
         try:
+            # Store event loop reference for MQTT callbacks
+            self.loop = asyncio.get_running_loop()
+            
             # Setup components
             await self._setup_database()
             self._setup_mqtt()

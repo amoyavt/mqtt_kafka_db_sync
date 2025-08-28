@@ -263,8 +263,13 @@ class IoTReplicaService:
             if not exists:
                 # Create table dynamically based on data structure
                 columns = []
+                has_id = False
+                
                 for key, value in sample_data.items():
-                    if isinstance(value, int):
+                    if key == 'id':
+                        columns.append(f"{key} INTEGER PRIMARY KEY")
+                        has_id = True
+                    elif isinstance(value, int):
                         columns.append(f"{key} INTEGER")
                     elif isinstance(value, float):
                         columns.append(f"{key} REAL")
@@ -272,6 +277,10 @@ class IoTReplicaService:
                         columns.append(f"{key} BOOLEAN")
                     else:
                         columns.append(f"{key} TEXT")
+                
+                # If no id column, add a serial primary key
+                if not has_id:
+                    columns.insert(0, "id SERIAL PRIMARY KEY")
                 
                 # Add metadata columns
                 columns.extend([
@@ -298,10 +307,22 @@ class IoTReplicaService:
         placeholders = ', '.join([f'${i+1}' for i in range(len(columns))])
         values = list(data.values())
         
-        # Use UPSERT for idempotency
-        if 'id' in data:
-            conflict_clause = f"ON CONFLICT (id) DO UPDATE SET {', '.join([f'{col} = EXCLUDED.{col}' for col in columns])}"
-        else:
+        # Check if table has primary key constraint for ON CONFLICT
+        try:
+            # Check if id column has a unique constraint
+            has_pk = await conn.fetchval("""
+                SELECT EXISTS (
+                    SELECT 1 FROM information_schema.table_constraints tc
+                    JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name
+                    WHERE tc.table_name = $1 AND tc.constraint_type = 'PRIMARY KEY' AND kcu.column_name = 'id'
+                )
+            """, table_name)
+            
+            if has_pk and 'id' in data:
+                conflict_clause = f"ON CONFLICT (id) DO UPDATE SET {', '.join([f'{col} = EXCLUDED.{col}' for col in columns if col != 'id'])}, updated_at = CURRENT_TIMESTAMP"
+            else:
+                conflict_clause = "ON CONFLICT DO NOTHING"
+        except:
             conflict_clause = "ON CONFLICT DO NOTHING"
             
         sql = f"""
